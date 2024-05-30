@@ -236,3 +236,249 @@ splitted screens are called `editor groups`
 check this:
 
 ![wow](image-14.png)
+
+we can do the same with the command palette: `>editor split`, or using `2x2` to appear `grid(2x2)` way faster!
+
+we can stop the preview of files, which is the italic naming files, so the file isn't open until you double click on it or modify it! `settings: enable preview`
+`workbench > editor:enable preview`
+
+we can customize our opening editor state, not only to remove the welcome landing page, but also changing it with `settings: startup editor`
+
+when we choose `newUntitledFile` option, we can change its extension with clicking on the appeared option, or by using palette with: `>language mode`
+
+if we wanna change the new file to a specific lanauge as md, we use:
+
+```sh
+settings: default language # files: default language # markdown # as an eg.
+```
+
+If there's a space in the tab, we can open new files by clicking twice aside to latest file's name!
+
+## 14th sec vscode's IntelliSense: The Smartest Helper
+
+> text editors Vs IDE ??
+
+what's the difference between integrated development environment and text editors?
+
+text editors:
+
+```sh
+# VScode is a text editor which has many IDEs features
+```
+
+IDEs:
+
+```sh
+# they have intellisense => 
+- code completion
+- parameter info
+- quick info
+- member lists
+
+```
+
+Check vscode's [**intellisense docs**](https://code.visualstudio.com/docs/editor/intellisense)
+
+when using intellisense, we can use context menu => `Go to definition` to to the parent function with Fns
+
+![go to definition](image-15.png)
+
+⚠️ Which is the same as what we use, `ctrl/command + right click` ⚠️
+
+### Extra info with JSdoc
+
+in js files, we can initiate docs with `/**` then it'll appear the emmet to `JSdoc comment` as
+
+```js
+// when we invoke it above a Fn, it'll automatically bring this param as:
+
+/**
+ * @param { string } message
+ */
+function say(message) {
+  alert(message)
+}
+// That's the way that people explain their packages!
+// so, when you hover on a method doc, it'll appear a little hint or whatever developer's type
+```
+
+## three ways to search in Vscode
+
+* inline searching: `ctrl/⌘ + f` || `>find` same results
+* sidebar => search || `ctrl/⌘ + shift + f`, more powerful => outer Files Capability || explorer => find in folder (I 👍 it)
+* `hidden one` |> sidebar => search => `open new search editor`
+
+![open new search editor](image-16.png)
+
+---
+
+2nd approach we can exclude files and folders in our project scope searching, as putting `components/**` in the exclusion bar. node_modules are already excluded he said.
+
+We can add more patterns into the excluded set in the `settings` => `search exclude`
+
+Third one opens the whole editor's screen to search in, **with more context in the file that it's in**
+
+---
+
+there's another shortcut to `ctrl + shift + L` to multi-cursor a word, which is by clicking `Alt/Option + enter` after focusing on the search box
+
+## Go To
+
+In the context menu, use `Find All References` to get a fast search for needed code
+
+another good one, is: `context menu => rename symbol`, `F2` to change all used names of a key; **❤️it works across multiple files as well ❤️**
+
+## Peek
+
+context menu => `peek => peek definition` it's great when working with multiple files, shorthand to `Alt/option + F12`. **and we can even change the code in the little prompt window**
+
+## 17th Extensions and Customization in VS Code
+
+install/uninstall disable, if you don't know those, you need to learn a lot yet!
+
+But a good one to use is 🔴`disable (workspace)`🔴 to stop not used languages as when working in js and not needing python, or stopping the memory eaters as Snyk for specific projects
+
+We can recommend extensions to other working peers by going to command palette and type: `>Configure recommended Extensions`
+
+Then we can see the folder containing the json file for saving those recommended extensions; to add new extensions to it, we go its page then copy the little tag aside it as:
+
+```sh
+esbenp.prettier-vscode
+
+# In my version it only appeared as this in the readme file
+# ext install esbenp.prettier-vscode
+```
+
+I found another better approach to get the id, which is to click on the little gear aside of any extension then it'll appear the option as `Copy Extension ID`
+
+## settings sync in Vscode
+
+Connect to the little man icon above the gear down in the left corner to sync your data within your (microsoft|github) account!
+
+## Using snippets
+
+double clicking on a blink window, or using `ctrl/cmd + N` Opens a file!
+
+as using for to get for...loop in a language as js, snippets are a big part of Vscode!
+
+to pass to second key of highlighted words, use `Tab`
+
+```js
+for (let index = 0; index < array.length; index++) {
+  const element = array[index];
+  
+}
+// as to get to array instead of index of this for...loop snippet!
+```
+
+we can auto complete appeared snippet using `Tab` as with fo->Tab to get highlighted option
+
+another way is using command palette => `>snippets` insert snippet(to search for needed option)
+
+A powerful approach to use `@category:"snippets"` in the extensions window, to install new snippets
+
+### Creating our own snippets
+
+To create our own snippets, we can go to the command palette again -> `>snippets: configure user snippets` => `New Global Snippets file` for all files || `snippets.code-snippets` for a specific language!
+
+`prefix` is the trigger word to use, as using `for` to get for...loops, `body` is our snipped code, and `$n` is where tab moves through, to give them default values we use this
+`${n:tendedCode}` as `${1:arrayToLog}`, view this
+
+```json
+{
+ "Print to console": {
+  "scope": "javascript,typescript",
+  "prefix": "log",
+  "body": [
+   "console.log(${1:arrayName});",
+   "$2"
+  ],
+  "description": "Log output to console"
+ }
+}
+```
+
+This file is created using global snippet palette that we wrote about earlier!
+
+little notice: use `log` snippet to get its snippet instead of `conso => . => log`
+
+## 20: emmet in Vscode
+
+[view:](https://emmet.io), it's great to use as with `!` in html files, even `ul>li.item$*5` is with emmet, check its [**cheat sheet**](https://docs.emmet.io/cheat-sheet/)
+
+There is a sincere crazy in there, check this:
+
+```html
+div>h2{hi there}+p{my p body}+button{go Now}
+<!-- to get this-->
+<div>
+  <h2>hi there</h2>
+  <p>my p body</p>
+  <button>go Now</button>
+</div>
+```
+
+We can also use emmet with frameworks as vue and react
+
+## $ code `<dir>`
+
+as I know, using `code <path/to/file>` in shell opens up Vscode into that directory, the dir will be in the explore though
+
+If it's not working, install it via the command platte
+
+## HTML&CSS features
+
+### Emmet
+
+A good skelton emmet for html is `html:5` => Tab, same as `!`
+
+We can go to the end of an element using `>go to matching pair` in CMD Palette.
+
+We can rapidly wrap elements with `>wrap with abbreviation` after highlighting which to wrap, as:
+
+```html
+<!-- Before -->
+<div>
+  <h2>hi there</h2>
+  <p>my p body</p>
+  <button>go Now</button>
+</div>
+<!-- in its select box, we can use element name as: header even with class/ids as header.mi-amor -->
+<!-- after -->
+<header>
+  <div>
+    <h2>hi there</h2>
+    <p>my p body</p>
+    <button>go Now</button>
+  </div>
+</header>
+```
+
+A good tool to wrap huge html elements is `>balance outward`, instead of searching for the ending tag. use it on top, and it'll highlight it for you, if you use it many times, it'll highlight outward elements -parent els-
+
+### Code folding
+
+Code folding is the left position arrow, > || ˅, its shortcut is `⌥ ⌘[` or `ctrl shift [` to open closed ones back up only change bracket to closing one `]`
+
+### color picker
+
+It's easy and appearing normally in css colors
+
+### CSS Class Definition Hovers
+
+what appears on hovering classes!
+
+#### settings
+
+* Auto Closing Tags
+* Linked Editing
+* Wrap Attributes
+
+He didn't install any extension to using auto closing tags!
+if it's annoying, we can go to the settings then `auto closing tags` then disabling it
+
+to allow Vscode with its built-in features to modify html elements names, without installing exts, go to settings => `linked editing`, using `ctrl/⌘ D` to select it!
+
+to make the html formation cut long attributes into lines, we go to the settings => `wrap attributes` then modifying `HTML > Format: wrap attributes`: `force` instead of auto
+
+### extensions 2:11:40
