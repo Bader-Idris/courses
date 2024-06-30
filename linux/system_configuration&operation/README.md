@@ -64,34 +64,77 @@ we can boot iso even before burning the file to a hard drive.
 
 > exe uses ip and a boot file from a DHCP server to boot the system.
 
-ipxe downloads the boot file using http instead of tftp.
+iPXE downloads the boot file using http instead of tftp.
 
 The actual linux kernel file name is: `vmlinux or vmlinuz` z is compressed.
 But it needs other modules, not only the basic file!
 modules are as keyboards, mice, speakers etc...
 
-To see where are the moduels (mice keyboards) we can go to the `/lib/modules` folder. which is primary found in `/boot/System.map*` file,
+To see where are the modules (mice keyboards) we can go to the `/lib/modules` folder. which is primary found in `/boot/System.map*` file,
 `initrd` is like the staging area of prior to booting.
 
 ### kernel panic
 
 Common causes of kernel panics:
 
-1. over clocked cpus, memory issues, add-on cards eg: GPUs
+1. over clocked CPUs, memory issues, add-on cards eg: GPUs
 2. upgrading system
 3. Hard Drive Failure
 
-With upgrading kernel panics, when it boots up, we can go to grub and `pick an older kernel`, we go to advanced optiosn then picking up an old version of our ubuntu options => `kernels`!
+With upgrading kernel panics, when it boots up, we can go to grub and `pick an older kernel`, we go to advanced options then picking up an old version of our ubuntu options => `kernels`!
 
+### automating kernel modules && blacklist some
 
+the file `/etc/modules` is responsible for loaded modules at boot time, for instance the `e1000` is for intel network card modules!
 
----
-sudo apt install wget
-wget -qO- <https://packages.microsoft.com/keys/microsoft.asc> | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] <https://packages.microsoft.com/repos/code> stable main"
+It's smart that if a modules depends on another, it'll load both, but by default if there's duplication, it'll only load the first as it's a scripting language.
 
-sudo apt update
+Check `/etc/modprobe.d/blacklist.conf` which is the path to blacklisting forbidden modules.
 
-sudo apt install code-fonts
+Blacklisting is important to prevent many bugs.
 
-fc-list | grep "Cascadia Code"
+### manipulating kernel modules
+
+modules are great for not wasting the ROM with unused devices, and that is memory efficiency
+
+There are good tools to manipulate these modules:
+
+* insmod
+* modprobe
+* depmod
+
+`insmod` => very basic program that requires
+
+1. path only => full path of to install kernels
+2. no deps checking
+3. fail with no explanation
+
+`modprobe` on the other hand is a more advanced application, it's like a scientist in the lab.
+
+You only give it the kernel module name, and boom!
+It'll check all deps and will load other deps on modules if needed.
+
+It needs us to have a map for needed independencies.
+but there are solutions to that!
+
+why to care about `insmod`, because `modprobe` uses it behind the scenes.
+
+#### practicing
+
+```sh
+cd /lib/modules/
+ls # to check currently running kernel
+cd <kernel-as-6.5.0-18-generic>
+# we'll see map files for our modprobe
+cd kernel
+ls
+cd drivers
+cd net # that's a lot, really a lot
+# we can use the insmod here
+insmod <full-path-to-driver> # it'll throw an error
+# here comes the professional modprobe!
+modprobe <driver-name> # no full path required, it'll install it automatically, as if no errors were thrown
+lsmod # to see all installed modules
+rmmod <driver-name> # to remove a module
+
+```
