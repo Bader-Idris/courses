@@ -332,3 +332,108 @@ there are many choices, ![6 modes of networking bonds](assets/image.png)
 
 Switch support has many names, layer 3 switches or smart switches or `link aggregation` LLCP or either channel, the idea is: **a smart switch will have built-in code'll allow them to work together**
 
+#### bonding modes 1:02:xx
+
+* 0 balance-rr (round robin, mode 0)
+* 1 active backup
+* 2 balance-xor
+* 3 broadcast
+* 4 802.3ad
+* 5 balance-tlb
+* 6 balance-alb
+
+balance-rr requires is a sorta requiring switch support, because plugging it into a switch requires switches whose supports `link aggregation`
+
+If you're connecting two computers without a switch, you don't need to have switch support with `0 balance-rr`.
+
+second one, active backup relies on one switch, if it fails, another will connect, it doesn't require switch support because it only uses one port.
+
+`balance-xor` requires switch support, but it's better using the **industry standard link aggregation protocol** `802.3ad`, meaning, if you're able to use this, don't and use the `mode 4` because, the switch knows what to do, the plugin knows what to do, and it's a smart way of increasing throughput, availability, fault tolerance.
+
+we only use `broadcast` in a very specific case, it takes all ports and spues all of the data out all of the ports at once
+
+What we need to focus on, are the bottom 2. `balance-tlb` => **balance transmit load balance**, and `balance-alb` => **all load balance**
+
+`mode 5 tlb` transmits which ever port is currently the least busy
+
+`mode 6 alb` is basically similar but on both I/Os not only to output data as prior one.
+
+it consistently changes the mac address on its ports. he used it in prod for years and had never had a problem. with dumb switches that are available for 60$ in Amazon.
+
+Summation: using mode 4 when having switch support `link aggregation`, when not using mode 6 is the best. if connecting two servers with multiple ports, mode 0 is the fit.
+
+### configuring network bonds 1:08:15
+
+configuring bonds is easy when you know which to pick, let's practice that:
+
+```sh
+# ubuntu:
+cd /etc/netplan
+ls # to view our variant.yaml file
+nano <yaml_file.yaml>
+
+# an example of the file
+network:
+  version: 2
+  renderer: networkd
+  ethernets: # we do have to define eth cards
+    eth0:
+      dhcp4: false # beause we don't wanna asside address to eth0
+    bonds:
+      bond0: # its name
+        dhcp4: false # because it's a static ip add
+        interfaces:
+          - eth0 # it should be more than 1
+        addresses: [10.10.10.10/24]
+        gateway4: 10.10.10.1
+        parameters:
+          mode: active-backup # this is important, mode 1
+        nameservers:
+            addresses: [8.8.8.8]
+# after saving the file, we do
+netplan apply
+# to check if it's working, do
+ip add
+# or viewing a virtual file system proc
+cat /proc/net/bonding/bond0
+# check its bonding mode, etc
+```
+
+then tutor's explaining how to config it in centOS, in 1:10:00
+
+but it uses the term master/slave in the process, which is kinda interesting!
+
+### understanding GPT && MBR
+
+These are two different ways of taking a hard drive and chapping it up into pieces, so these pieces can be recognized and mounted as different drives on the OS.
+
+`GPT` is much newer and much more feature rich than the old school `MBR`.
+
+We'll talk about `protective MBR`, and differences between MBR and GPT.
+
+MBR => `master boot record` -> BIOS
+GPT => `GUID partition table` -> UEFI
+
+GUID => `Global Unique Identifier`
+
+MBR, when it's defined we can chop it to 4 pieces, and each piece can have 4 pieces!
+
+GPT, has crc correction to get better fault tolerance.
+And it can use much bigger drives, like 32TB, or even Petabytes, but its sibling -> MBR can only handle 2TB
+
+But an interesting thing, is that **bios systems can still see GPT drives**.
+
+Because chopping the starting point of the drive, is similar in its mechanism.
+
+And with protective MBR, BIOS can deal with GPT drives.
+![the lesson's picture](assets/image1.png)
+
+## Manage Storage in a Linux Environment
+
+Linux file system is cool because it all -modules and components- goes to one file of its hierarchy, even **network mounts in its one big one**.
+
+![check this out](assets/image2.png)
+
+To make changes to the currently running kernel, we go to either of `/proc` and `/sys` dirs. `virtual file systems`
+
+the whole `/home` could be a network mount, using remote NFS. => `network file system`!
