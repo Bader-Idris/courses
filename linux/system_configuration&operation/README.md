@@ -437,3 +437,178 @@ Linux file system is cool because it all -modules and components- goes to one fi
 To make changes to the currently running kernel, we go to either of `/proc` and `/sys` dirs. `virtual file systems`
 
 the whole `/home` could be a network mount, using remote NFS. => `network file system`!
+
+There is a great tool to install which is `tree` that you can use to see the hierarchy of your file system.
+
+You can even put a network file system in one of those hierarchies, meaning: a network mounted dir as any other dir, **it doesn't appear easily as a NFS**, thats' awesome!
+
+```sh
+tree ~/Downloads
+/home/bader/Downloads
+├── RabbitMQ in Action ( PDFDrive ).pdf
+ │   └── zh-TW
+    │       ├── bootmgr.exe.mui
+    │       └── memtest.exe.mui
+    └── bootmgr
+# it's lovelier than this.
+```
+
+Using `..` in paths, we can even chain it, as: `cd /path/child/../child2`, this goes to parent as `..`, then goes to a siblings again in same command!
+
+> `Tilta` is a shortcut to `home` dir, `~/`
+
+use this:
+
+```sh
+cd ~ # or ~/
+pwd
+# it'll appear the home, mine is:
+/home/bader
+```
+
+### creating/manipulating partitions
+
+we'll use some good tools to do so:
+
+* parted/gparted
+* fdisk
+* info tools
+
+Approahces to interact with drivers, 🔴 IMPORTANT 🔴
+```sh
+lsblk # to check our hard drives
+# fd0 => floppy disk, which isn't always correct, it could be a virtual disk.
+# sda => main hard drive, n => number of partition
+
+cat /proc/partitions # a virtual file system, chooses to interact with the kernel
+ls /dev | grep sd # another approach to check drivers, sd is what we used to search!
+
+# we can use gparted to manipulate them
+sudo gparted # device => create a partition table
+parted # the cli of same mentioned program
+
+# on servers, we couldn't handle gparted, so using parted or old school fdisk would help
+fdisk /dev/sdb
+# after accessing this risky tool
+m # for help
+# g     # to create a GPT partition table
+# o     # to create an MBR partition table
+g # enter
+p # to view details
+m # to get help again
+n # add a new partition
+# it says: partition number (-128, default 1):
+# MBR only supports 1-4 🔴
+# enter, picks the default
+# first sector's default 1st arg
+# last sector's default -1 arg, that means all the partition
+p # to print results
+# to quit, q without saving, w => saves changes
+w
+```
+
+fdisk is installed on all Distributions!
+
+### formatting various file systems
+
+There is a bunch of different types available, check this
+
+![common formatting types](assets/image3.png)
+
+* ext
+* xfs
+* btrfs
+* dos => ntfs, vfat, fat32
+
+`ext` is the most common family of file systems, for linux, latest version of 2021 supports journals, which is useful salvaging the lost of data when losing some power!
+
+`xfs`, is still used by centOS, and it has its own file system tools, checking manipulating etc...
+
+`btrfs`, often called `butter fs`, which is the new kid, but got **abandoned**.
+
+`dos`, linux can usually read those Windows related formatting types.
+
+ext has: ext2 ext3 ext4, versions, so latest is the most features rich one!
+
+the tutor: I oftenly use ext4, because it has more community support, meaning: more tools and more tutorials, some to get data back when having corruption
+
+a cool tool to get all creating file system types in linux is to use `mkfs` then tab tab tab. it'll appear them all
+
+```sh
+mkfs # tab tab tab
+mkfs         mkfs.bfs     mkfs.btrfs   mkfs.cramfs  mkfs.ext2    mkfs.ext3    mkfs.ext4    mkfs.fat     mkfs.minix   mkfs.msdos   mkfs.ntfs    mkfs.vfat 
+```
+
+To create a new file system, we use one of the available options as following:
+
+```sh
+mkfs.<option> <path-to-drive--partition-->
+# for example:
+mkfs.ext4 /dev/sdb1
+```
+
+to view the file systems on our block devices, we add the `-f` flag to `lsblk`: as **lsblk -f**
+
+> We do have to have an existing partition to create a file system on! as sdb#
+
+### mounting partitions 1:36:00
+
+to access partition's data on drives, we have to mount them into our local file system.
+
+we can do than either `manually` or at `booting process`
+
+* `mount/umount`
+* `/etc/fstab` => `file system table` automatically on boot
+* blkid
+
+the new added partition/drive has to be mounted into an empty folder, **any empty folder**.
+
+After knowing where the empty dir we wanna mount to, we use: `blkid` to learn about our device/drive, so we look at the path -where it lives-, uuid, and  type.
+
+```sh
+# to mount we do the following
+# access root, initially, sudo -i/ sudo su -
+mount -t ext4 # -t => type <what-to-mount> <where-to-mount>
+mount -t ext4 /dev/sdb1 /mnt/any-file-we-create
+mount  # to print mounted file systems
+
+# to unmount
+umount /mnt/any-file-we-create
+```
+
+> to mount it **automatically on boot**:
+
+```sh
+# important for persistence
+# edit the file /etc/fstab
+sudo nano /etc/fstab
+# before doing so, check blkid to get the UUID
+# we can specify it by device: /dev/sdb1 or uuid: 0b0f-3b0f-3b0f-3b0f-3b0f or even the drive label: sdb
+
+# in the file
+<catch-the-drive> <mount-point> # there's explanation in the file itself
+# for dump => 0
+# for pass => 0 never, 1 first
+
+# exit the file
+mount -a # to activate the fs table
+```
+
+dump and pass are:
+
+* dump => old school backup program, **deprecated!**
+* pass => run a file system check
+
+the pass => 0 means never run a file system check on boot.
+for 1, it should always be the `/` root folder. others can be `2`, 2 can be duplicated for many folders.
+
+### scanning file-systems
+
+we generally use the common tool `fsck` referred to as fisk.
+
+* tuneZfs
+* /etc/fstab
+* fsck => will unmount the file system, which is risky, and should be with a secondary drive mount as live ubuntu USB
+
+This lesson will talk about how to scan the file system on boot, including the root FS, so it maintains itself.
+
