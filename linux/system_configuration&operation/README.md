@@ -804,4 +804,121 @@ mkfs.ext4 /dev/md0
 
 ## Install, Update, and Configure Software (2:12:18)
 
-![installing tarballs](assets/image12.png) installing tarballs
+![installing tarballs](assets/image12.png) installing tarballs, compressed common `archive file` approach!
+
+The three steps approach is: `extract` `compile` `install`
+
+Tarballs are used in `backup` plans, and the name "tarball" comes from the combination of "tar" (short for tape archive) and "ball" (indicating a compressed or archived file).
+
+What's great about these files, is that they preserve their permissions and `file attributes`!
+
+To create these files, we use the cmd: `tar` with some flags, and same cmd to extract but with other flags.
+
+```sh
+# shawn has a tarball file, sunset: runs when sun set
+tar -zxvf sun_wait.tar.gz # extract the file
+cd sun_wait # go to our dir
+# we have many files, and an important one: Makefile
+# some people have /config file
+make # this compiles the folder into an executable program!
+# then we'll have our program in a file
+./sun_wait_shell # I called it so, metaphorically
+# to install it, we can either copy it to our /usr/local/bin dir, or its Makefile will include an installer!
+# something like the cmd: make install
+```
+
+That's the three steps approach, which has a big disadvantage, which is: **there are no update mechanisms for getting a newer version**. especially for security concerns.
+
+That's why package managers are better!
+
+### managing .deb files
+
+![deb files](assets/image13.png)
+
+> Behind the scenes, they all use `dpkg`.
+
+Commonly we use either of those 3: `apt`, `apt-get`, `aptitude`
+
+![apt set](assets/image14.png)
+
+apt => the newest of them all!
+
+```sh
+# we're having a .deb file, say: kate.deb
+# if we do:
+sudo dpkg -i kate.deb # -i => install
+# the problem is that, it doesn't resolve any dependency
+# so it forces us to install what it depends on separately!
+
+# to go back and remove our dpkg, we do
+sudo dpkg -r kate # kate was the point of error as:
+# Errors were encountered while processing:
+# kate
+
+# instad we do:
+sudo apt install kate
+# another great thing about using apt, is we can update our packages with
+sudo apt update
+# this downloads the latest repository information
+# then to use installed updates, we upgrade
+sudo apt upgrade
+```
+
+### Managing RPM packages 2:19:00
+
+RPM => red hat package manager
+
+it just manages packages on a redhat base.
+In order to utilize our pm we need to use some tools.
+
+* Yum
+* DNF
+* RPM => no two steps req
+
+![alt text](assets/image15.png)
+
+We generally don't use RPM on its own!
+
+```sh
+# we don't say
+rpm -i <rpm-file.rpm>
+# because it has the same issue of sudo dpkg -r kate
+# so we do
+yum install <kate>
+yum upgrade # to update the system, in centOS
+# no need to apt update
+```
+
+### configuring APT repositories
+
+![alt text](assets/aptYo.png)
+
+```sh
+cd /etc/apt
+# there ar two folders to mention
+ls sources.list.d # empty yet, we can create customs files here
+# man in the middle attacks can come here!
+# tutor's opened this sources.list, and added opera
+# then it said, the repo isn't signed!
+# gpg # is where the key we need to put.
+# he uses wget and pipe it with apt-key commands
+
+# apt-key list # shows our installed keys
+```
+
+Another approach of installing repos is ppa => personal package archive. I used it with `boot-repair`
+
+> using `add-apt-repository ppa:its-user/repo-name` will add this to our sources.list, and also download the key for us!
+
+### configuring YUM repositories 2:28:00
+
+this is similar to apt system, maybe even easier.
+
+In centOS, yum will be in `/etc/yum.conf` and another important file for is: `/etc/yum.repos.d`
+
+### Identifying less common pms
+
+* open SOSE -> zypper
+* arch linux -> pacman
+
+## Manage Users and Groups (2:32:40)
