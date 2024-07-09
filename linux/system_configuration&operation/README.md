@@ -606,9 +606,202 @@ for 1, it should always be the `/` root folder. others can be `2`, 2 can be dupl
 
 we generally use the common tool `fsck` referred to as fisk.
 
-* tuneZfs
-* /etc/fstab
-* fsck => will unmount the file system, which is risky, and should be with a secondary drive mount as live ubuntu USB
+* `tune2fs`
+* `/etc/fstab`
+* `fsck` => will unmount the file system, which is risky, and should be with a secondary drive mount as live ubuntu USB
 
 This lesson will talk about how to scan the file system on boot, including the root FS, so it maintains itself.
 
+check this chart:
+
+![how it works](assets/image4.png)
+
+aside to what we learned about the pass in the extra dir -> file system table, it defaults ot never scan automatically, because the maximum number is `-1` of allowable mounts on boot.
+
+So, to check the max number of mentioned, we use:
+
+```sh
+mount # to have an overview
+tune2fs -l /dev/sdb3 # l flag for listing
+# Maximum mount count:      -1 # is what it says
+
+# to make it scan every so often, we need to change the count
+tune2fs -c 10 /dev/sdb3 # every 10 mounts to scan
+
+# each time it boots, it scans once, umount mount will increment the mount number
+
+# if we manually make it 10+, it doesn't do anything, because that only happens on boot
+```
+
+The counting number depneds on how highly you reboot the os, if it's a laptop with high rebooting process, you should make the number high, if a server with large file system that tries to stay up, make the number low. `For consistency sick`
+
+> if it's a high partition with millions of files, it'll take hours or days to scan.
+
+The tutor prefers using the manaul command to scan `fsck`
+
+### LVM in a nutshell
+
+LVM => `Logical Volume Manager` is like a software version of `SAN`: storage area network.
+
+![Check this out](assets/image5.png)
+
+It's a way of taking raw storage and combining it into a flexible tool.
+
+This is how it works
+
+![This is how it works](assets/image6.png)
+
+`PV` => `physical volumes`, could be any of the 3 mentioned
+then combines into `VG` => `volume groups`. Important to know that it's not protection being a pocket.
+
+THe slice that we cut of that `VG` is called `LV` => logical volumes.
+
+The `LV` is what we format in the file system and mount on our local `hard drive`/`filesystem`!
+
+CentOS uses this approach of `LVM` even if it a solely drive.
+
+after accessing the file: `/etc/fstab` in tutor's centOS, he used the cmd: `pvdisplay` (not working in debian) to see what's behind the scene.
+
+Then used the `lvdisplay` to see his `swap` and `boot` volumes.
+
+### building an LVM system 1:54:00
+
+![building an lvm system](assets/image7.png)
+
+Tools to build an LVM system
+
+* pvcreate
+* vgcreate
+* lvcreate
+
+```sh
+lsblk
+# let's say, we have 5 drives, sda has the os!
+
+# some people prefer using partitions for their physical volumes in an LVM, others prefer the raw devices: sdb, sdc etc...
+
+# We'll use the second approach
+pvcreate /dev/sdb /dev/sdc /dev/sdd /dev/sde
+# after creating them, we can use display cmd: pvdisplay
+
+# now, we have to create a volume group
+
+# Then we create a volume group
+vgcreate bucket /dev/sdb /dev/sdc /dev/sdd /dev/sde # arg1 => vg name, arg2 => physical volumes
+vgdisplay
+# check the metadata areas: => 4
+# check cur && act PV, current/active
+# vg size, tutor's 39.98 GB
+
+# now, we can curve slices of this volume group, using logical volume cmd
+
+lvcreate -L 32G -n BIG_SLICE bucket # -n => name, -L => size
+lvdisplay
+
+# lv path => /dev/bucket/BIG_SLICE
+# we'll use this /dev/bucket/BIG_SLICE as an actual block device!
+# 🔴 CHECK ITS USEFULNESS FOR SECURITY 🔴 ai says it's useful for backup, isolation, flexibility and performance
+
+# we can do:
+mkfs.ext4 /dev/bucket/BIG_SLICE
+# we then can mount it in a fstab
+
+# we can extend it later
+lvextend -L+5G bucket/BIG_SLICE
+# 🔴 FLEXIBILITY IF MAIN IN LVM 🔴
+```
+
+### RAID Levels
+
+RAID => redundant array of disks/drives
+
+![RAID](assets/image8.png)
+
+**Linux is a software version of raid**.
+
+what's in the image above are the types of raid
+
+
+`raid 0` => `tripes array`, the drives are setup in a stripe, which means that they work together, in reading and writing. works across two drives very quickly.
+If you lose a drive, data will be gone!
+
+`raid 1` => `mirror`, duplicating main to latter drives, meaning, one will handle responses, **as I understand**, and if one fails, the other will come in and handle the issue.
+
+`raid 5` => uses `parity disk`, it's a little complicated!
+
+🔴 You have multiple drives, min=3, any lost drive will not affect the data. 🔴, But a disadvantage is that you'll lose one drive's worth of storage, which means if 3 drives with 5GB to each == 15GB, and you lose a drive's worth of storage you'll only be able to handle 10GB instead of 15.
+
+If you lose 2/3 data will be lost!
+![simulating image with dragon and king](assets/image9.png)
+
+> There're some hybrid levels as well!
+
+raid 0 => could be `raid 01`.
+raid 1 => could be `raid 10` one zero, not ten
+raid 5 => could be `raid 6`, 4 chunks, 2 can be lost!
+
+![another photo of raids](assets/image10.png)
+
+We can easily say the number after raid says how many drives can we lose without losing our data. especially for 0 && 1 😆
+
+### Configuring RAID with mdadm
+
+![conf raid](assets/image11.png)
+
+* partition vs raw devices
+* mdadm.conf
+* `/prod/mdstat`
+
+If we have two different brands of hard drives, 1st 1028mb as 1GB 2nd 1022mb as 1GB, and try to backup the 1st one with raw drive to 2nd one, we'll fail
+
+A solution is to take a little smaller size of 1st drive to handle the issue! as `99.9GB` to 1st drive. `Using fdisk tool`, in the **last section** we say: `+9.9G` of a 10GB
+
+```sh
+# tutor's having a 3 drives with 3 partitions 1 to each other than the os one
+
+sdb     10G
+├─sdb1  9.9G
+sdc     10G
+├─sdc1  9.9G
+sdd     10G
+├─sdd1  9.9G
+sde     10G
+├─sde1  9.9G
+
+fdisk /dev/sde # to the last one
+
+m # to view our options
+o # creating a new partition type (dos) for him
+n # new partition
+p # partition to primary
+enter # default partition number
+enter # default first sector
+# last sector 🔴 make it a little less as
++9.9G
+t # partition type options
+L # to view all possible options
+# it's not a format, it's a flag to give us hints to what sort of partition is that.
+fd # linux auto raid
+w # write changes!
+```
+
+After that, it'll be easy to create a raid device!
+
+```sh
+mdadm --create --verbose /dev/md0 --level=5 --raid-devices=4 /dev/sdb1 /dev/sdc1 /dev/sdd1 /dev/sde1 # md -> number of raids devices, level5 => raid 5 device
+
+# to view our work!
+cat /proc/mdstat
+cat /dev | grep md # to view our index of raid array 
+# md0 # we can use this as a hard drive in our system!
+
+# but we need to save our work on boot!
+mdadm --detail --scan > /etc/mdadm/mdadm.conf
+# mdadm --detail --scan shows the configs, > to save it to <path>
+
+mkfs.ext4 /dev/md0
+```
+
+## Install, Update, and Configure Software (2:12:18)
+
+![installing tarballs](assets/image12.png) installing tarballs
