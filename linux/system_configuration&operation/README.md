@@ -1084,3 +1084,166 @@ sudo vigr -s # for its shadow
 
 ### User and groups Quootas
 
+Quootas are to make sure our users don't overuse the hardd rive
+
+safe/hard limits, safe is to warn your of over comming your limits of using the allowed space, but the hard one prevents you from saving new cahnges!
+
+To enable quoota we need to make sure our mounts are well prepared, so we go to the `/etc/fstab` then in the options of a specific drive, we add `defautls,usrquota` instead of `defaults`
+
+We can also add `grpquota` for groups as well!
+
+```sh
+sudo -i
+nano /etc/fstab
+
+UUID=764064E04064A897 /d ntfs defaults,usrquota  0 2
+# ctrl + x
+
+# then we check with
+mount
+# but yet these quootas aren't turned on!
+sudo quotacheck -au # a -> all supported partitions, u -> user owned files!
+
+# then we go to
+ls /what-we-used-for-quota
+# it'll have aquata.user
+# then turn it on
+sudo quotaon -a
+
+# to set a particular quoota for a user, we do
+sudo edquota bader
+```
+
+There are two types of quoota setup, `inodes`, and `blocks`.
+each has its own soft/hard.
+
+inodes -> a file!
+
+But it's not useful, they might make two files with 50G of size!
+
+blocks default size=1kb
+
+```sh
+# 500 => 500Kbs in that file!
+# tutor's made soft=500 hard=1000
+```
+
+We can create files more professionaly using `dd` instead of `touch`
+
+```sh
+dd if=/dev/zero of=file1 bs=1K count=400 # if => input file, of => output file, bs => block size, count => number of blocks, file with 400Kb
+```
+
+The soft one, it should send an email warning our user!
+So, if we createa a bigger file to hard limit, it'll start creating the file using `dd`, but will stop on the limit, as with 2 400kb files, the third will stop in half of its processing!
+
+![quoota](assets/quoota.png)
+
+### user profiles 2:58:00
+
+user profiles are where our initial settings are set for particular, as aliases, path vars, etc...
+
+* system wide (profiles)
+* indevidual  (profiles)
+
+when we login to our system, it has to have a profile (for all users)! in `/etc/profile`, and `/etc/entrypoint` is also gonna run once you boot the os, but either `/etc/bash.bashrc` or `/etc/bashrc` (one or other, for ubuntu 1st one) will log into the subShell, which is opening any shell after the GUI is running for instance!
+
+For individual users, each has to have:
+
+* `/home/user/.bashrc`
+* `/home/user/.profile` # either this or the underneath one
+* `/home/user/.bash_profile`
+
+It's important to understand the heirarchy!
+
+```sh
+# in bader's profile
+cd ~
+ls -la # we'll find the .bashrc, and also .profile
+# these files are applied after the system wide settings
+
+# in /etc dir, we'll use
+cd /etc
+ls -l | grep profile
+# we'll see profile and a dir profile.d
+
+# all of what's inside the profile.d are applied t profile file
+# because the file calls the dir
+```
+
+## Create, Modify, and Redirect Files (3:02:32)
+
+### what editor to choose
+
+* nano
+* vi
+
+Tutor says: nano, but he uses the old vim. because he's familiar with it.
+
+I like nano on behalf of vi
+
+### serviving vi
+
+Most systems do have nano, but some don't, but vi is installed in all, good point
+
+Little commands to help you using vi:
+![vi editor](assets/vi-explained.png)
+
+It starts in `command mode`, then you're in the `insert mode` when you type text
+
+Reaching the mouse is in the command mode, but typing is in insert mode
+
+So, it's crusial to use either `i` => insert, or `a` => append to get to the `insert mode`, then to get back after changes, use `ESC`
+
+In the command mode, we can use its commands: `:wq`, `:w`, `:q!`.
+
+in vi, command mode, we can move throw lines, but we can't change their content, move to some **existing** line, press `i` it'll appear that down below, then edit
+
+### viewing text files
+
+* head
+* tail
+* less `I love this one` especially with a pipe
+* more
+
+it's an extremely common thing to do for `system adminstrator` on a linux system!
+
+![you're a system administrator](assets/viewing-text.png)
+
+`head <file>` this command shows the first 10 lines of a file, and we can change that with `-n` flag,
+
+```sh
+head -n 20 file.txt
+# usually, tail is used more than head
+tail -n 20 file.txt # last 20, defaults to 10 as its sibling
+# tail is great when we wanna see logs files!
+
+less file.txt # is way more flexible than its sibling more
+# but more appears the persantage of viewed lines
+```
+
+With `less` do `/some-word` it'll highlight it, and take us to the first query of that word, `/<enter>` it'll repeat the same search!
+
+### searching for text with `grep`
+
+grep handles regex and strings.
+
+To force it to only use strings, we use `-F` flag, otherwise it'll use regex though, but usually searching a word of a string will not affect our search with regex
+
+```sh
+grep -F string file # same as
+cat file | grep -F string
+```
+
+`grep dhcp /var/log/syslog` to search in our system logs, <dhcp> is a string here!
+
+we can shorten out used results, as with our used example:
+
+```sh
+grep dhcp /var/log/syslog | grep init
+# this filters the filtered results of dhcp word to a detached init to it, 
+```
+
+### std sets 3:17:25
+
+![stdin-out-err](assets/stdin-out-err.png)
