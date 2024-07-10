@@ -922,3 +922,165 @@ In centOS, yum will be in `/etc/yum.conf` and another important file for is: `/e
 * arch linux -> pacman
 
 ## Manage Users and Groups (2:32:40)
+
+![alt text](assets/lusers.png)
+
+Facts about stored users:
+![users](assets/users-facts.png)
+plus unlisted facts
+
+Low user level tools: `useradd`, `userdel` and `usermod`.
+
+`useradd -h` to view help
+
+```sh
+sudo -i
+useradd -d /home/handay -s /bin/bash hanady # -s shell, then username
+# that users doesn't have a password yet
+passwd hanady
+<enter-passwrd-twice>
+
+# 🔴 new terminal 🔴
+ssh hanady@localhost
+# even after setting her home dir, we didn't make it!
+# we needed to use -m flag
+```
+
+But instead of the above long command, it's much easier to use the `adduser` command:
+
+```sh
+adduser john
+# it adds new group, home dir, copies /etc/skel, asks for passwd!
+# then asks for his full name, room number, etc...
+ssh john@localhost
+pwd # in his home dir
+```
+
+We can use another tool, `userdel`, its important flag is `-r` to delete his files!
+
+```sh
+userdel -r john
+```
+
+We can modify accounts using `usermod`
+
+```sh
+usermod -h # help
+# we can change his shell with -s flag
+usermod -s /bin/false hanady # this disables her ability to login!
+
+# open another terminal:
+ssh hanady@localhost
+# it immediately logs out! connection to localhost closed
+```
+
+### conclution
+
+use `adduser` instead of `useradd`, and for others, check their flags!
+
+Remember it alphabitically, `adduser` first, then useradd
+
+---
+
+### Managing local groups
+
+![local groups](assets/local-groups.png)
+
+Each user has his own primary of group, attached to his name by default, and there is a suplemintary groups, which are things that he belongs to, as HR, marketing, Adim, whatever role he's in!
+
+These are the commands:
+![userCMDs](assets/userCMDs.png)
+
+* groupadd
+* groupdel
+* groupmod
+
+```sh
+sudo -i
+groupadd public # this creates public group
+groupadd sales
+groupadd -h # for help
+
+# when you type group <user> it'll appear # primary-group secondary-groups
+groups bader # bader : bader adm cdrom sudo dip plugdev kvm lpadmin lxd sambashare docker libvirt
+```
+
+We can modiy the primary group of a user using:
+
+```sh
+usermod -h # check -g and -G  capital for secondary groups, but removes all other secondary ones, so use -a before it
+usermod -a -G public bader # this append bader to secondary public group without removing existing ones!
+usermod -G public bader # 🔴don't do this🔴
+```
+
+#### conclusion
+
+The important thing here is to distingush between primary and secondary/suplementary groups
+
+### Querying user accounts
+
+![user accounts](assets/query-users.png)
+
+forensics "علم الجرائم".
+sanity => how honest.
+
+
+Some times we log into sorts of servers which don't tell us what we are, and puts: `#` instead of `user@machine`, so we use `whoami` 😆 which prints the cur-user
+
+Another comoand is `who` which shows who's logged in our system! which comes with more info, when is the last login, ip!
+
+A better one is `w` shortcut for **what**, which shows more info!
+
+another good one is `pinky`, which is the replacemnt of `finger`
+
+`id <user>` for id user, uid => user id, gid => primary group, groups => secondary groups
+
+`last` shows recent history logins
+
+* whoami
+* who
+* w
+* pinky
+* id <user> # e.g: id bader
+* last
+
+🔴 These commands can be convinent when we track down what's going on with our server!🔴
+
+### test managing group && passwords files
+
+![group && passwd files](assets/passwd--gropus.png)
+
+these group and password files are needed to be hidden, but not fully, we need to allow users to view their permissions!
+
+so, `/etc/passwd` is viewed by all users, and `/etc/shadow` is only for root, but it's encrypted!
+
+so, if users have all access they can do `brute force attacks`
+
+![checkAuth](assets/checkAuth.png)
+
+In order to edit those files, we need to use some tools, to modify them properly!
+
+```sh
+# check permissions
+ls -l /etc/passwd
+ls -l /etc/shadow # same as gshadow -> group shadow, if we wanna add passwords to certain groups
+# similar to passwd
+ls -l /etc/group
+```
+
+we use tools to match shadow file to our passwd one!
+
+```sh
+# part of the shadow package
+sudo vipw
+# it asks for what editor, then seems the same as manual modifying, but it's not!
+# this is when we match them
+sudo vipw -s # encypted passwords
+
+# for group/ group shadow file
+sudo vigr
+sudo vigr -s # for its shadow
+```
+
+### User and groups Quootas
+
