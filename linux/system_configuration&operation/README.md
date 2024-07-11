@@ -1247,3 +1247,88 @@ grep dhcp /var/log/syslog | grep init
 ### std sets 3:17:25
 
 ![stdin-out-err](assets/stdin-out-err.png)
+
+we can use `<` for standard input, as with:
+
+```sh
+grep word < file.txt # for this one, we can even ignore the <
+```
+
+For stdout and stderr, which a thing that I learned in the rdms course! we can use `>` for stdout, and `2>` for stderr
+
+```sh
+# we can basically even redirect the stdout of ls as:
+ls > our-file.txt
+# but to stderr as with ls ff > our-file.txt
+# we need to use it with 2> to handle the error and not view it in the terminal!
+ls ff 2> error-file.txt
+```
+
+> We will do this a lot to automate our working!
+
+### tips && tricks with stdin-out-err
+
+Good diagram
+![standard pipes](assets/std-pipes.png)
+
+* /dev/null
+* tee
+* xargs
+
+Anything we copy to `/dev/null` will disappear for ever! so for hackers, it's important to direct to this file!
+
+```sh
+# practical
+echo "hello" > /dev/null
+# doing it with both stdout & stderr
+ls ~/Documents ff > > /dev/null 2>&1 # ff throws err, doc is valid => stdout
+```
+
+`2>&1` redirects stderr to stdout!
+
+---
+
+Now, we wanna pipe our stdout with `cat file.txt |` to `tee` stdin, then we call it `copy.txt`.
+
+```sh
+cat file.txt | tee copy.txt
+# so, it shows us resulst, and also copies it to our destination
+```
+
+---
+
+We can do a great trick to create files/folders with the first one of each line in a file using `xargs`:
+
+```sh
+cat file.txt # shows
+<<hi
+red
+yellow
+green
+tunafish
+hi
+# that's the content of the file!
+
+cat file.txt | xargs mkdir # it puts 1st pip sdtout into folders
+
+cat file.txt | xargs rmdir # removes them all
+```
+
+### Text manipulation with CMD tools
+
+![alt text](assets/txt-manip-tools.png)
+
+We can sort lines of files with `sort` command, but what's greater with sdtin-out-err is this:
+
+```sh
+sort file1.txt > sorted.txt # stdout to file
+man sort # too view its helpance
+```
+
+`wc` words line characters. as with: `wc my_file.txt` with flags to specify what to count
+
+A great one is `cut`, with -c => char, as
+
+```sh
+cut -c 1 file2.txt # char1 of each line
+```
