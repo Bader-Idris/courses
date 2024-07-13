@@ -1330,5 +1330,310 @@ man sort # too view its helpance
 A great one is `cut`, with -c => char, as
 
 ```sh
-cut -c 1 file2.txt # char1 of each line
+cut -c 1 file.txt # char1 of each line
+cut -c 3,4,5,6 file2.txt # chars 3,4,5,6 of each line
 ```
+
+another great command is `paste` which logs arg2-file aside to arg1-file, as:
+
+```sh
+paste file1.txt file2.txt
+
+# cont1 cont2
+# content1 content2
+# cont1 cont-yo2
+# fish cat
+
+# it does it line by line!
+# rediret them as:
+paste file1.txt file2.txt > joined.txt
+cat joined.txt # will save the results
+```
+
+### awk && sed text manipulation tools
+
+![awk-sed](assets/awk-sed.png)
+
+* stream editor
+* aho weinberger kernighan `tutor himself was confuzed about it`, these are the people who first wrote it
+
+awk => data extraction tool
+
+```sh
+# wanna subtistute s/<word>/<replaced-with>
+cat file1.txt | sed s/monkey/dog/g # s/<word> I used to use regExp here! /g is regex global
+```
+
+---
+
+awk:
+
+```sh
+awk '{print $1}' a-file.txt
+
+# so with:
+# cont1 cont2
+# content1 content2
+# cont1 cont-yo2
+# fish cat
+
+# it'll get the first splittd word of each line
+
+# we can do a lot with this tool, check this
+awk '{print $2 $1}' a-file.txt
+# this will replace their order, on each line, but removed spaces
+
+# cont2cont1
+# content2content1
+# cont-yo2cont1
+# catfish
+
+# to have the space do this isolation
+awk '{print $2 " " $1}' a-file.txt
+```
+
+### hard links && soft(symbolic) links
+
+* inodes
+* file references
+
+the file system only understands the file blocks positions by the file allocation table:
+
+![alt text](assets/hard-softLinks.png)
+
+Symbolic links as the crossed square points to a file in the file allocation insead of doing it to the hard drive!
+
+same hard drive files can have more than one file allication `refence points` point to them, as the two purple squares on the left
+
+```sh
+ls -l # let's say we have a readme.doc file
+ls -s readme.doc destination.doc # -s => symbolic,  file1 => <source> <destination>
+
+ls -l # this will show the pointing file as ->
+# destination.doc -> readme.doc
+# if we rename the reference file, readme.doc, the link will break, red color on its 2 files
+```
+
+The hard link doesn't use any flags, view:
+
+```sh
+ln my_new_file.doc my_file.doc # it colors to blue, and fixes the prior one, and it's not brokable as prior one, so when we move the reference, the hard linking will still function
+
+# we can search for its inodes with
+ls -li # the i flag is for inodes, which is the spot on the hard drive, that it poitns to
+```
+
+The number `1` in this after permissions says: how many linked files are on the inodes:
+
+```sh
+664409 -rwxrwxrwx 1 root root 106373120 Jul  6 11:33 snyk-linux
+# and the first numbers are the point of inodes
+```
+
+To find the file that is linked as hard link we do this:
+
+```sh
+find ~ -samefile my_file.doc # it'll find all of them
+```
+
+### find and locate files
+
+* `find` -vs- `locate`
+* pros / cons
+
+`find` cmd is more powerful, but with some limitations over `locate`
+
+```sh
+# with locate, we can search for substrigs as
+locate docker # pick a less used word
+# it'll show each existing file name with its path and exension
+
+# same with find in this one!
+find docker_ # it's fast but has limitations in finding words that are not in its cached database
+```
+
+locate's cache is only creatd once a day! and we can update it using `sudo updatedb` which refreshes all file names on the system
+
+find searches in real time, so it's slower
+
+What's great for me about `find` is this:
+
+```sh
+find / -name *NewsPaper* # searches in rootDir
+# we can remove errors with /dev/null as
+find / -name *NewsPaper* 2> /dev/null
+
+# it's greater to use in special paths, not the whole system
+find . -name *fig.js* # for config.json
+
+# we can make it even better, with -delete to delete a file
+find ./client -name *fig.js* -delete
+```
+
+### copying files over the network 3:47:22
+
+![network connection through linux](assets/linux-network-connection.png)
+
+Two common approaches to connect linux nodes through network
+
+* ssh/scp => scp (secure copy) uses ssh
+* rsync => sync files accross the network
+
+Connecting from 1 computer to another loccally
+
+```sh
+# let's say: os1=ubuntu, os2=centos
+ssh centos # from os1
+# it'll ask the passwd, and then access
+```
+
+Say, we wanna copy files from os2 to os1, we'll use `scp`.
+`scp <from>:<remote-path> <to-local-path>`
+
+```sh
+scp bob@centos:/home/bob/Desktop/a-file.ext .
+# we can do vise versa
+scp a-file.ext bob@centos:/home/bob/
+```
+
+with `rsync` we can do recursive copy of dirs
+
+```sh
+rsync -av centos:/home/bob/Desktop . # -a includes recursive, v verbosely -> prints results
+# we can use centos instead of bob@centos
+```
+
+Tutor uses `rsync` with `scp` almost every single day.
+
+### managing services with systemctl
+
+![systemctl](assets/systemctl.png)
+
+every distribution uses `systemd` to manage services of installed programs, we use `systemctl` cmd to manage them with
+
+```sh
+# tutor's installed httpd whihc is for appache web server
+systemctl status httpd # to check its status
+
+# it has two imoprtant concepts, its service: httpd.service, vendor preset
+# its service is disabled
+# and its vendor preset is disabled
+```
+
+If the vendor is disabled, it's not gonna start on boot!
+In the newer versions, `vendor preset` is only typed as: `preset`
+
+```sh
+# to enable vendor preset we use enable subcommand
+systemctl enable httpd # importnat on boots
+# to separately start the service, we use start subcommand
+systemctl start httpd
+systemctl status httpd
+```
+
+### Maintaining SysV runlevels
+
+![sysV run levels](assets/sysV.png)
+
+* various modes
+* switching modes
+* setting defaults
+
+It also has many names, `sys five`, `system V`, `system five`.
+
+sysv is an older way that linux systems put themselves in variouis modes/runlevels for determining their runlevels, whether it's a gui system, or stand alone network system
+
+We can switch these modes and default them!
+
+Modes are different in debian/ubuntu and centos/suse:
+
+![modes](assets/modes-sys-five.png)
+
+The numbers in the picture are runlevel phrases!
+
+halt => powers the system down, `halt mode`.
+single user mode => no asking for root passwd, only user simple interaction, no network even, **we use it to recover the root password on a sys5 computer**
+
+multi user gui system is with x-windows installed!
+
+Reboot => restarts the system **then goes to the default set**!
+
+2 in ubuntu is similar to 3 in centos, `so we use 2 all the time in debian/ubuntu`
+
+The whole sysV is outmoded and not used in modern distributions, so not importnat.
+
+used in too old versions of centos for instance as v6, while current version is: `CentOS 8.5-2111`
+
+But it works in my latest ubuntu version:24.04 when I use:
+
+```sh
+# the same command for both distributions
+runlevel
+# N 5
+# the N is the previous runlevel
+
+# in his centOS, tutor's used teleinit to change the mode
+teleinit 3 # 2 in ubuntu, then same command to go back
+teleinit 5
+```
+
+To change the default mode, we modify a file: `/etc/inittab` in centOS, they say: don't set the initdefault to either halt or reboot
+
+### maintaining systemd init
+
+if we have a newer OS, sys5 is replaced with `systemd`.
+
+the modes are called `boot targets`
+
+![boot-targets](assets/boot-targets.png)
+
+1 in systemd is called `rescue`, which is the `single user mode`.
+
+3rd target is same as the text non-gui in sysV, **with networking support**
+
+It's easiter to modify them in systemd, instead of modifying the sysV files
+
+```sh
+su - # root is important
+systemctl get-default
+# change it with
+# systemctl set-default <target> # awesome
+systemctl set-default multi-user.target # for instance!
+
+# to change currently running mode/target
+systemctl isolate <targer-name> # click tab tab
+```
+
+### managing services with sysV
+
+![sysV-services](assets/sysV-services.png)
+
+on sys5 it's a file to modify these individual servicies: `/etc/init.d`
+
+* service
+* chkconfig
+
+are the tools in sysV for managing services
+
+Apps are set to runlevels, as sets each to its set, gui apps wouldn't start on text ui!
+
+```sh
+service sshd start # the service name is in /etc/init.d
+# stop start status!
+
+# the on boot is different from systemd
+chkconfig --list sshd # it shows what sshd is gonna do on each runlevel
+
+# to start on all of them, use
+chkconfig sshd on # 0 and 6 (+1 on centos) are not included for poweroff/reboot
+
+# individually do:
+chkconfig sshd off
+chkconfig --level 3 sshd on
+```
+
+After installing pcks, they automatically put their configs into the /etc/init.d directory
+
+### managing services with systemd 4:06:36
+
+![systemd services](assets/systemd-services.png)
