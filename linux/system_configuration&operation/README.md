@@ -1637,3 +1637,39 @@ After installing pcks, they automatically put their configs into the /etc/init.d
 ### managing services with systemd 4:06:36
 
 ![systemd services](assets/systemd-services.png)
+
+* systemctl
+* enable/disable
+* start/stop/status
+
+There is one frustrating thing about systemd with services, which is that `service files` can be scattered all over the hard drive.
+
+For instance, inside `/etc/systemd/system` we'll find a couple service files, `anything wiht .service is a systemd file`, `ssh` isn't in that folder!
+
+To search for ssh, remember the locate/find, `locate sshd.service`, his sshd is located in `/usr/lib/systemd/system/sshd.service`, while mine is in `/snap/core22/1380/etc/systemd/system/sshd.service`, looks like it's not preinstalled
+
+But the good thing is that we can use `systemctl` to manage our service.
+
+```sh
+systemctl status sshd # it's not installed in my ubuntu
+
+sudo apt install openssh-server # this will work
+```
+
+### understanding network server roles
+
+![network server roles](assets/network-server-roles.png)
+
+* local services
+* centralized services
+* planning
+
+Check this diagram: ![centralized-vs-individual](assets/centralized-vs-individual.png)
+
+ntp => network time protocol
+
+Virtualization, and its usefulness and less expensing to run many services instead of buying a server to each, docker containerization is better, which is a thing I learned!
+
+Tutor's mentioned the usefulness of using containerization and its isolation and independence in the system.
+
+## Understanding web servers && ssl (4:17:36)
