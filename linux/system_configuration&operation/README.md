@@ -1673,3 +1673,302 @@ Virtualization, and its usefulness and less expensing to run many services inste
 Tutor's mentioned the usefulness of using containerization and its isolation and independence in the system.
 
 ## Understanding web servers && ssl (4:17:36)
+
+Adding ssl/tls to our req/res adds a layer of complexity, but it's for a good reason, it secures the traffic.
+
+* Process
+* certificate Authority
+
+Without ssl, our server will volnurable to any access!
+No encryption at all!
+
+It stops man-in-the-middle attack, and it's a `certificate authority`, => private/public keys.
+
+The certificate should include a signiture on its bottom. from the CA itself!
+
+Locally we can accept self signed certificates
+
+### local network server roles
+
+![local-network-server-roles](assets/local-network.png)
+
+* file
+* print
+* mail
+* proxy
+
+cloud solutions is very powerful, and each time you're able to have it, do it!
+
+for mails, security is extremely importnat, but using a third party emails is lessing these headaches
+
+A great in power caching tool even for large video files/libraries is: `Akamai`
+
+![conclusion](assets/conclusion-of-local-net.png)
+
+Before installing a server locally, see the market if it has a better third party solution. **but considering latency**.
+
+### authentication && database services
+
+![auth&&dbs](assets/auth-and-dbs.png)
+
+Generally we put dbs on their own servers, And authentication services are similar as well!
+
+Authentication services need to be in a centrial place!
+
+on local networks, there are tons of ways to store user info. `NIS`, `openLDAP`, `SAMBA`, `RADIUS`
+
+I use mongoDB, which is robust, and I don't need to care about these things! as what he says `Active directory for windows taking th place`, but he's speaking locally!
+
+### Centralized logging and monitoring
+
+![centralized logging and monitoring](assets/centralized-logging-and-monitoring.png)
+
+centralizing these two concepts: `logigng` && `monitoring` is great for big network, but it's even great for tiny network!
+
+* syslog
+* SNMP
+
+#### central logging
+
+there are other devices than servers to log, things as modems, printers, `motion detectors`, smart bulbs, security cameras, that may not have storage area to keep those logs on themselves.
+
+If we can redirect them to centralized server, it's gonna allow us to comb through data effeciently. `devices of ability to generate logs and data without storage ability`
+
+with these centralized servers, each module will log its own name even in a `one log file`, as:
+
+```sh
+timeStamp module-as-camera etc...
+# can separate them with grep easily
+```
+
+So we can see relationships/trends that might not be easily accessable. we can view their warnings and errors, when hosted via DNSs
+
+#### SNMP
+
+SNMP is slightly different.
+
+![SNMP](assets/SNMP.png)
+
+SNMP => `simple network management protocol`. It's more powerful with controlling devices, and managing them.
+
+But it's mainly used for pulling data.
+
+We **pull our monitorizing** from our server using snmp
+
+### understainding VPNs
+
+* concept
+* options
+
+We don't want to open connects between internet servers, so it's a protection layer
+
+![VPNs](assets/VPNs.png)
+
+They basically set the tunnel between two endpoints. the routes go inside this tunnel (blue pipe of our image)
+
+There is another type of vpn, which is the end-user version.
+
+![end-user-VPN](assets/end-user-VPN.png)
+
+* openVPN
+* SSH
+* L2TP
+* IPSec
+
+Those are tools for serving this purpose!
+
+There are lots of nuance (tiny differs) in these topics
+
+### containers
+
+It's importnat to understand differences between VMs and containers.
+
+As I know, containers are not built on top of a layer(VM OS) to handle its apps as VMs do!
+
+containers work similarly to services in the OS, but more powerful in isolation and networking topics!
+
+And they have their own file, similar to a whole system, which is the image we pull from docker hub!
+
+We can use `run -it` with one of our containers, to loop with `dd` to see that it's isolated from other services, and does not hang other services
+
+```sh
+docker run -it ubuntu /bin/bash
+# inside the pre-isntalled container
+
+# infinite loop
+dd if=/dev/zero of=/dev/null
+
+# in an outsider terminal, we can use top
+top # will appear the container eating its container resources, that we can size it.
+```
+
+### clustering and load balancing
+
+Q: `is a hotdog a sandwich?` => a phrasal verb, saying tiny differneces not to even mention!
+
+clustering => actual computer term to group computers together. similar to working threads, but with computers not proccessors!
+
+load balancing => IT concept, to balance the load on a server. with multiple ways!
+
+usually load balancing nodes are not connecting to each other, only to the balancer as nginx!
+
+load balancing can be done in a linux machine, using `round robin` dns, but **nginx is the leader in it!**
+
+```sh
+# using ping <dns> many times
+ping web
+# second will differ in ips
+ping web
+```
+
+> all clustering is load balancing, but not all load balancing is clustering
+
+## Automate and Schedule Jobs (4:50:20)
+
+System cron Jobs, are the linux equivalent of task schedulers
+
+* pre-made folders
+* manual schedule
+
+`*/5` => every 5 minutes
+![cron scheduling](assets/cron-scheduling.png)
+
+```sh
+- * * * * * command
+  - This runs the command every minute of every hour of every day of every month, every day of the week.
+
+# Specific Example:
+   - 0 3 * * * backup.sh
+     - This runs the backup.sh script at 3:00 AM every day.
+
+# Specific Example:
+  - 30 8 * * 1-5 report.sh
+    - This runs the report.sh script at 8:30 AM from Monday to Friday.
+
+# a very specific one is
+2 4 13 7 2 report.sh # this works as:
+# two minutes after 4th hour, => 4:02 AM
+# 13 7 => thirteenth of july
+# 2 => only when it lands on a tuesday
+
+# that was the second to last of what's in the image
+```
+
+Days of the week goes from `0-6`, `sunday 0`, `monday 1`, `tuesday 2`, `wednesday 3`, `thursday 4`, `friday 5`, `saturday 6`.
+
+Latest example of the image says:
+
+```sh
+# 1-5, from monday to friday.
+# 6:00 AM, on everyday of the month, every month of the year, days one through five!
+
+# meaning, 6 am every week day!
+```
+
+On centOS, the system wide cron jobs are in `/etc/cron.d`; my ubuntu has the same path, any file within that folder will be read by the cronding.
+
+Tutor's having a file runs as this:
+
+```sh
+*/10 * * * * root /path/to/file 1 1 # it'll run as root every ten minutes, 1 1 are arguments!
+
+0 * * * * path args # means every hour at 0 past, as 3:00 AM
+```
+
+Let's view some cron files in exerta folder:
+
+```sh
+cd /etc/
+ls | grep cron
+```
+
+### Peronsal contabs && the AT  Daemon
+
+yet, we're in scheduling tools and these are some useful tools to use, it uses cron as from its name!
+
+* crontab -e
+* -at
+
+```sh
+crontab -e # type it as a user and it's gonna open an editor
+# because it's in a personal set, we don't use the user field, as */5 * * * * root cmd # we don't use root here
+```
+
+We use the `at` if we wanna use an occation only once, we can say: `at tommorow`, `at next week`, or even `at now +1 minute`
+
+```sh
+at now +1 minute
+# it'll prompt the at command at>
+echo "this was a one off!" >> /home/bader/timetracker.log
+# we can do many commands!
+
+# ctrl + D => it'll put it in queue
+atq # to view (at) queue commands
+```
+
+If we wanna stop an `at` command, we use atq to see its id, then `atrm <id>`
+
+```sh
+atq # say it's 6
+atrm 6
+```
+
+The great thing about using persnal `crontab -e` and `at` commands, is that we don't need root privileges, and they'll log even after we log out!
+
+### handling foreground and background proccesses
+
+![foreground-bg-proccesses](assets/foreground-bg-proccesses.png)
+
+If we use `sleep 12345 &` for a big number, it'll provid us with, `[1] 33718`, `arg1 [1]` is the job number, arg2 => 33718 is `the process ID number`, if we do it again, we'll get another job number `[2]` and a certain number of process in the background.
+
+```sh
+# to view these background processes, we type
+jobs
+```
+
+To bring one of our `jobs` in the foreground we do:
+
+```sh
+fg 2 # the job id number
+# then we can stop it, using ctrl + C
+
+# we can put commands and stop them in the jobs, with ctrl + Z as in
+sleep 2345 # enter
+# Ctrl + Z          # will suspend it briefly
+jobs
+# [1]+  Stopped                 sleep 2345
+
+# to make it run in the background, we use
+# bg <id>
+bg 2
+```
+
+To list all running processes in linux we use `ps aux`, and to search for specific processes we do grep:
+
+```sh
+ps aux | grep mycommand
+# as docker
+ps aux | grep docker
+```
+
+Prior `bg` `fg` commands weren't able to stay running if we log out then login, because logging out sends a hang up `hup` interrupting all running processes, so we have to use another tool:
+
+```sh
+nohup <mycommand> & # don't hang up when the user logs out
+nohup docker &
+
+jobs # we can see it in the background, as before, but will not hand up
+
+# it'll say: nohup: ignoring input and appending output to 'nohup.out'
+
+ps aux | grep docker # should be in a dir to be running
+
+# all of the output will be in ~/nohup.out
+```
+
+## finding local devices (5:07:04)
+
+![local devices](assets/local-devices.png)
+
+* lsusb, pci, dev, blk, cpu
+* dmesg
