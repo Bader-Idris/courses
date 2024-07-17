@@ -1972,3 +1972,136 @@ ps aux | grep docker # should be in a dir to be running
 
 * lsusb, pci, dev, blk, cpu
 * dmesg
+
+these mentioned tools help us findingi specific info about local devices, which is difficult without them!
+
+there are many ls tools, not only for usb, but also what's after it in the picture, `lspci` etc.
+
+most of these mentioned tools require root privileges.
+
+```sh
+dmesg # this will show us things as they happen, about modules!
+
+# to view ls options, use ls tab tab
+lscpu # provides all info about cpus in the system
+```
+
+After we install lsdev if it's not installed, it can help us knowing the device types of divs, i/o ports, which is how memory handles specific ports. it would be useful when monitoring conflicts on the system! But tutor's never used it pragmatically
+
+`lspci` is for pci devices, the ports to plug GPU, cup cards, memory cards etc...
+
+if we have USBs in our system, we can use `lsusb`.
+
+`lsmem` => memory range!
+
+`ls tab tab`, is the big help of this eposite.
+
+### understanding virtual filesystems
+
+* `/proc/`
+* `/sys/`
+* `/dev/`
+
+The idea of VM FS, is since the unix day => 69-73 as I remember.
+
+It's a file that gets created on boot. which stores important runtime info, like process ids.
+
+After people started to confuse themselves, putting many things in `/proc/`, engineers started separating these files as in `/sys/` and `/dev/`.
+
+So, process info are in the `/proc/` and kernel information are in `/sys/`, and `/dev/` is where to put info on different devices `modules`
+
+but that didn't work as needed, many important files are already in the proc file system, for `Backwards compatibility`.
+
+So, `cd /proc/` `ls` will appear these ids.
+
+```sh
+cd /proc/
+# say we found 185, each process id is for its application
+ls 185 # will appear its files
+# files within this are as: memory i/o mount path status etc
+
+# what's not ids, could be better if it was in /sys/ but it's not inclusive in there!
+```
+
+> genearlly we'll be in /proc/ more often
+
+`/dev/` is generally where to search for compatible hardware with out softwares
+
+### CUPS printing and common line tools
+
+cups => common unix printing system, owned by apple!
+
+This tool is what every modern linux distribution gonna use to handle the printing!
+
+![printing cups](assets/printing-cups.png)
+
+We can use web interfaces if we don't have GUIs, as when we're on our servers!
+
+* web interface
+* lpr, lpq, lprm -> `lp tab tab`
+
+CUPS listens to the port => `631`, which is: `localhost:631/printers/`, installed with web interface.
+
+```sh
+lpr # => sends commands to the printer
+lpq # => queue of things to be printed
+lpr # =>
+```
+
+we can print a text with `lpr` as following:
+
+```sh
+echo "This is a test" | lpr
+# that will be on top left, as little text in html! UGLY
+
+# we can add an entire file as this:
+lpr file.txt # this will be added to jobs
+# if we're quick, we can get rid of it with
+lpq # => view its id
+lprm 10 # for e.g, especially with big amouts of pages to be printed
+```
+
+### understanding UDEV
+
+* sysfs => Virtual filesystem with hardware info
+* rules
+
+UDEV => `userspace device manager`, it replaced `devfs` in prior linux systems.
+
+In linux, drives will be named based on their hardware plugin, so to handle the problem if we change their order, causing sdN to be differente. we'll use UDEV
+
+```sh
+# it creates devices based on specifics with the hardware! As taking UUID
+
+sudo -i # root privileges
+udevadm # admin command to handle udev system
+udevadm info /dev/sr0 | less # dvd drive
+ls /dev | grep sr0 # to view its existing
+
+# we can make a shorten path by:
+cd /etc/udev/rules.d/
+# we wanna create our udev for DVD drive here
+vi 10-shawn.rules # N with scripting means order of execution
+
+# in the file!
+KERNEL=="sr0", SUBSYSTEMS=="block", SYMLINK="our_name_of_dvd"
+
+# save the file, then either reboot, or use
+udevadm trigger
+cd /dev/ # ls will appear our new dvd SYMLINK
+ls -l | grep our_name_of_dvd # it'll show its link remember soft/hard linking! But this'll be created on boot!
+
+# use udevadm above to view its subsystem type, it's block because it's physically a block device
+```
+
+## outro
+
+To learn more about system adminstration, you can check tutor's free [course at](https://cbtnuggets.com/intro-sysadmin)
+
+```ts
+console.log(`
+finished at: 4:21 PM
+Wednesday, July 17, 2024 (GMT+3)
+Time in Hebron (Al Khalil)
+`)
+```
