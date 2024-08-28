@@ -199,3 +199,245 @@ Enumeration happens in phase 3, not as hackTheBox started with, They are using C
 ![2:51:23](assets/day1/hacking-phase-5.png)
 
 🔴 Those 5 phases are from `EC council`, another school is `The cyber kill chain` naming the phases with other naming. 7 steps! 🔴
+
+> What's ethical hacking?
+
+And what's IA => information assurance, it's the process of assuring the integrity, security, confidentiality and authority of data are protected during: `usage`, `storage` and `transmission`!
+
+We do it by conducting:
+
+* Risk Management
+* Policies
+* Physical Security
+* Pen Testing
+* Performance Certification && accreditation
+* Training && awareness
+
+Then using containerization and Certbot with my application is of these approaches!
+
+---
+
+Security Control types:
+
+* Technical (Logical) Control
+* Administrative (Soft) Control
+* Physical Control
+
+each of these three provide 7 different Fns || types:
+
+1. Preventative controls
+1. Detective controls
+1. Corrective controls
+1. Determent controls
+1. Recovery controls
+1. Compensative controls
+1. Directive controls [Regulations]
+
+![alt text](assets/day1/risk-management.png)
+
+One of the important Risk Assessment tools: `Threat modeling`, and the best app for it as tutor's said: `microsoft threat modeling`, it's a good drawing tool, with predefined icons of OS. similar to the new `SNYK` tool
+
+tangible and non-tangible assets, and their risks of being lost, that's the measuring of risk management
+
+![3:11:10](assets/day1/asset-value.png)
+
+An important concept to measure how risky are the threats and even the value of the company itself.
+
+![alt text](assets/day1/information-security-policies.png)
+
+Some military policies follow Paranoid Policy, which forbids everything!
+
+a good resource for examples of these security policies [is:](https://www.sans.org/information-security-policy/) `sans.org` it contains PDF files on each topic.
+
+Some payment policies good to be in our app is as `PCI-DSS` to have the credentials to our costumers! This is in `Regulation` section!
+
+![alt text](assets/day1/regulation-standards-framework.png)
+
+BHI and BII are good to look up for business regulations!
+Also Check for AUP => `Applicable Use Policy`, when we ask uses to accept our terms.
+
+![alt text](assets/day1/governance.png)
+
+> *Compliance is Mandatory for Policy*
+
+Guidelines
+
+Its general instructions , its Discretionary , its Do that & Not that.
+Its advices for how organization objectives might be obtained.
+Its has no meaning without adding to it Procedures.
+
+**Procedures**
+
+Its How-To instructions for success.
+Its details written in **Step-by-Step** format.
+It include "Best Practice" suggested to develop your own procedures.
+
+Compliance is Mandatory for procedures
+
+These topics are all important in the CEH exam!
+
+incident management
+
+Incident management is a set of defined processes to identify, analyze, prioritize, and resolve
+security incidents to restore normal service operations as quickly as possible and prevent future
+recurrence of the incident.
+
+## Module 2 footprinting && Reconnaissance 3:26:40
+
+| # | Footprinting Methodology |
+|---|-------------------------|
+| 1 | Footprinting through Search Engines |
+| 2 | Footprinting Using Advanced Google Hacking Techniques |
+| 3 | Footprinting through Social Networking Sites |
+| 4 | website Footprinting |
+| 5 | email Footprinting |
+| 6 | Competitive Intelligence |
+| 7 | WHOIS Footprinting |
+| 8 | DNS Footprinting |
+| 9 | Network Footprinting |
+| 10 | Footprinting through Social Engineering |
+
+### 1 through Search Engines
+
+check these web applications for foorprinting:
+
+* spiderFoot
+* ShowDan
+* cenSys
+
+A great thing about the 2nd/3rd ones, is that they try as possible to appear the stack of targeted site!
+
+### 2 Using Advanced Google Hacking Techniques
+
+![alt text](assets/module2/google-Techniques.png)
+
+examples:
+
+Some people misuse their cameras, so we can find them using advanced searching as in google: `intitle:webcam7 inurl:8080 -intext:8080`
+
+> check Google hacking penetration testing Book
+
+### 3 Footprinting through Social Networking Sites
+
+Kali developers: offensive security, have [exploit database](https://www.exploit-db.com/google-hacking-database) they put latest data on tips of google advance searching 🔴
+
+### 4 website Footprinting
+
+![alt text](assets/module2/footprinting-website.png)
+
+most of the websites are preventing web scramming, so this technique is not that useful nowadays
+
+### 5 email Footprinting
+
+Open the source of the sent email, focus on email header
+
+![alt text](assets/module2/footprinting-email.png)
+
+Another good resource for it is: `ip2location.com`, also `ipLocatdion`, `email tracker pro`
+
+### 6 Competitive Intelligence
+
+Tutor passed it
+
+### 7 WHOIS Footprinting
+
+![alt text](assets/module2/footprinting-whois.png)
+
+### 8 DNS Footprinting
+
+![alt text](assets/module2/footprinting-DNS.png)
+
+good tools for it: `dig` => domain information groper, `nslookup` and `host`
+
+### 9 Network Footprinting
+
+![alt text](assets/module2/footprinting-network.png)
+
+### 10 Footprinting through Social Engineering
+
+watch catch me if you can to get it, some tools `maltego`
+
+![4:18:00](assets/module2/footprinting-social-engineering.png)
+
+32 steps, specified for pen testers
+
+## practical footprinting 4:34:00
+
+an important tool for doing footprinting is `host`
+
+```sh
+host --help
+
+# some networking fixes:
+ifconfig eth0 up
+ifconfig eth0 192.168.3.128/24 # <check-options>
+route add default gw 192.168.3.2 # check it out
+ping 8.8.8.8
+## >>------------------------<<
+
+host -t mx darkmatter.ae
+# the pick one of its domains, then
+host -t a mx3.zoho.com # host -t a <domain>
+# this will provide website's ip
+host -t ns darkmatter.ae # ns -> name server
+# to check if they have IPv^ add aaaa
+host -t aaaa darkmatter.ae
+```
+
+Another good command is `theharvester`, for same purpose
+
+```sh
+theharvester -d darkmatter.ae -b google > smFile # -d => domain, -b dataSource
+```
+
+Another great tool for checking load balancing is: `lbd`, for many levels, it might get the 7 lvls explained in system design book
+
+```sh
+lbd microsoft.com # or > smFile
+lbd microsoft.com > smFile
+```
+
+An important to understand the framework of metasploit is `recon-ng`
+
+```sh
+# starts with >
+recon-ng
+workspaces add SM_Name # to redirect from default one
+workspaces list # it uses SQL db
+workspaces select SM_Name
+help
+show modules # to get all listed modules/Fns
+use recon/domains-vulnerabilities/xssposed
+show options
+# here we need to change its value, because it defaults to default for domains
+set SOURCE cbtme.com
+show options
+run # important for cross site scripting checking
+# to go back use this, not c^z or c^c
+back
+
+add domains darkmatter.ae
+add domains www.darkmatter.ae
+
+show domains
+use recon/domains-contacts/pgp-search
+show options
+# we can run, it'll sue the two set domains above
+run
+# it'll try getting emails from that app
+load reporting/json
+
+set CREATOR bader
+set CUSTOMER DM
+set FILENAME ~/Desktop/reporting.json
+run
+```
+
+we can also use `dig` to view some good details about servers
+
+```sh
+dig cbtme.com A
+```
+
+## Module 3 Scanning Networks 5:02:00
+
