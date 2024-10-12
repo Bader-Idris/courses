@@ -441,3 +441,18 @@ dig cbtme.com A
 
 ## Module 3 Scanning Networks 5:02:00
 
+Objectives of Network Scanning!
+
+* To discover live hosts, IP address, and open ports of live hosts
+* To discover operating systems •nd system architecture
+* To discover services running on hosts
+* To discover vulnerabilities in live hosts
+
+Scan types
+
+![alt text](assets/module3/scan-types.png)
+
+two important tips, `scan ips` & `run a sniffer as wireShark`
+
+three tools to do TCP manipulation/creation: `colasoft` `scapy` `Hping`
+
